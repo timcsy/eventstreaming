@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "eventstreaming"
+version = "0.0.1"
+authors = [
+    { name="timcsy", email="timocsy@yahoo.com.tw" },
+]
+description = "Event streaming library."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "pynput>=1.7",
+    "websockets>=10.1",
+    "av>=9",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/timcsy/eventstreaming"
+"Bug Tracker" = "https://github.com/timcsy/eventstreaming/issues"
+
+[project.scripts]
+events = "eventstreaming.websocket.server:run_main"
