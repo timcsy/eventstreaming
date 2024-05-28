@@ -2,7 +2,10 @@ import threading
 import time
 import websocket
 import av
+import sys
 import mss
+from PIL import ImageGrab
+import pyautogui
 import numpy as np
 import struct
 
@@ -43,23 +46,22 @@ def send_packet(packet):
         ws.send(header + data, websocket.ABNF.OPCODE_BINARY)
 
 def main(left=None, top=None, width=None, height=None, new_width=None, new_height=None, fullscreen=False):
-    with mss.mss() as sct:
-        monitors = sct.monitors
-        monitor = monitors[1]
+    if sys.platform == 'win32':
+        size = pyautogui.size()
 
         if fullscreen:
-            left = monitor['left']
-            top = monitor['top']
-            width = monitor['width']
-            height = monitor['height']
+            left = 0
+            top = 0
+            width = size.width
+            height = size.height
         if left is None:
-            left = monitor['left']
+            left = 0
         if top is None:
-            top = monitor['top']
+            top = 0
         if width is None:
-            width = monitor['width']
+            width = size.width
         if height is None:
-            height = monitor['height']
+            height = size.height
         if new_width is None:
             new_width = width
         if new_height is None:
@@ -71,18 +73,58 @@ def main(left=None, top=None, width=None, height=None, new_width=None, new_heigh
         codec.pix_fmt = 'yuv420p'
         codec.bit_rate = 2_000_000
         codec.options = {'profile': '0'}
-
+        
         while not terminate:
-            screenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
+            screenshot = ImageGrab.grab(bbox=(left, top, left + width, top + height))
             img = np.array(screenshot)
             frame = av.VideoFrame.from_ndarray(img, format='bgra')
             frame = frame.reformat(width=codec.width, height=codec.height, format='yuv420p')
             for packet in codec.encode(frame):
                 send_packet(packet)
             time.sleep(0.001)
-    
-    for packet in codec.encode():
-        send_packet(packet)
+        for packet in codec.encode():
+            send_packet(packet)
+    else:
+        with mss.mss() as sct:
+            monitors = sct.monitors
+            monitor = monitors[1]
+
+            if fullscreen:
+                left = monitor['left']
+                top = monitor['top']
+                width = monitor['width']
+                height = monitor['height']
+            if left is None:
+                left = monitor['left']
+            if top is None:
+                top = monitor['top']
+            if width is None:
+                width = monitor['width']
+            if height is None:
+                height = monitor['height']
+            if new_width is None:
+                new_width = width
+            if new_height is None:
+                new_height = height
+
+            codec = av.codec.CodecContext.create('vp9', 'w')
+            codec.width = new_width
+            codec.height = new_height
+            codec.pix_fmt = 'yuv420p'
+            codec.bit_rate = 2_000_000
+            codec.options = {'profile': '0'}
+
+            while not terminate:
+                screenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
+                img = np.array(screenshot)
+                frame = av.VideoFrame.from_ndarray(img, format='bgra')
+                frame = frame.reformat(width=codec.width, height=codec.height, format='yuv420p')
+                for packet in codec.encode(frame):
+                    send_packet(packet)
+                time.sleep(0.001)
+        
+        for packet in codec.encode():
+            send_packet(packet)
 
 def start(left=None, top=None, width=None, height=None, new_width=None, new_height=None, fullscreen=False):
     global ws, start_time, ws_thread, screen_thread, terminate

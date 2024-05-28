@@ -81,10 +81,10 @@ def record_io_event(path=None):
         while input is None:
             time.sleep(0.001)
             input = get_io_event()
-        if state =='start' and input['event'] == 'p ctrl':
-            state = 'p ctrl'
+        if state =='start' and (input['event'] == 'p alt' or input['event'] == 'p alt_l'):
+            state = 'alt'
             tmp_inputs.append(input)
-        elif state =='p ctrl' and input['event'] == 'pr':
+        elif state =='alt' and input['event'] == 'pr':
             state = 'end'
             break
         else:

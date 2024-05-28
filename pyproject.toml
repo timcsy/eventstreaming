@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eventstreaming"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     { name="timcsy", email="timocsy@yahoo.com.tw" },
 ]
@@ -19,6 +19,8 @@ classifiers = [
 
 dependencies = [
     "pynput>=1.7",
+    "pyautogui",
+    "Pillow"
     "websockets>=10.1",
     "av>=9",
 ]
