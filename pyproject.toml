@@ -21,6 +21,7 @@ dependencies = [
     "pynput>=1.7",
     "pyautogui",
     "Pillow",
+    "mss",
     "websockets>=10.1",
     "av>=9",
 ]
